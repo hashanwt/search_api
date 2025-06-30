@@ -1,14 +1,14 @@
 openapi: 3.0.0
 info:
-  title: Meilisearch Search Playground
-  version: "1.0"
+  title: Mutual Funds Search API
+  version: "1.0.0"
 servers:
   - url: http://165.232.185.237:7700
 paths:
   /indexes/mf_index/search:
     post:
-      summary: Search Mutual Funds
-      description: Query mutual fund data with filters and sorting
+      summary: Basic Search
+      description: Full-text search mutual funds by name, AMC, category, etc.
       requestBody:
         required: true
         content:
@@ -18,15 +18,7 @@ paths:
               properties:
                 q:
                   type: string
-                  example: equity
-                filter:
-                  type: string
-                  example: asset_class = "Equity" AND sub_asset_class = "Mid Cap"
-                sort:
-                  type: array
-                  items:
-                    type: string
-                  example: ["final_score:desc"]
+                  example: flexi cap
                 limit:
                   type: integer
                   example: 10
@@ -47,10 +39,115 @@ paths:
                       type: object
                   estimatedTotalHits:
                     type: integer
-        '401':
-          description: Unauthorized
       security:
         - bearerAuth: []
+
+  /indexes/mf_index/search/filter-asset:
+    post:
+      summary: Filter by Asset Class
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                asset_class:
+                  type: string
+                  example: Equity
+                limit:
+                  type: integer
+                  example: 10
+      responses:
+        '200':
+          description: Filtered result by asset_class
+      security:
+        - bearerAuth: []
+
+  /indexes/mf_index/search/filter-sub-asset:
+    post:
+      summary: Filter by Sub Asset Class
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sub_asset_class:
+                  type: string
+                  example: Mid Cap
+                limit:
+                  type: integer
+                  example: 10
+      responses:
+        '200':
+          description: Filtered result by sub_asset_class
+      security:
+        - bearerAuth: []
+
+  /indexes/mf_index/search/filter-amc:
+    post:
+      summary: Filter by AMC Name
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amc_name:
+                  type: string
+                  example: HDFC Mutual Fund
+                limit:
+                  type: integer
+                  example: 5
+      responses:
+        '200':
+          description: Filtered result by AMC name
+      security:
+        - bearerAuth: []
+
+  /indexes/mf_index/search/top-by-score:
+    post:
+      summary: Get Top Funds by Score
+      description: Sorted list of top mutual funds by `final_score`
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                  example: 10
+      responses:
+        '200':
+          description: Sorted by score descending
+      security:
+        - bearerAuth: []
+
+  /indexes/mf_index/search/top-by-aum:
+    post:
+      summary: Get Top Funds by AUM
+      description: Requires `aum` to be a sortable attribute
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                  example: 10
+      responses:
+        '200':
+          description: Sorted by AUM descending
+      security:
+        - bearerAuth: []
+
 components:
   securitySchemes:
     bearerAuth:
